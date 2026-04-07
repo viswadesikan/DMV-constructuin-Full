@@ -15,15 +15,15 @@ export interface FileItem {
 }
 
 const toFileItem = (f: any): FileItem => ({
-  id: f._id,
-  name: f.name,
-  uploadDate: f.createdAt?.split("T")[0],
-  category: f.category,
-  subcategory: f.subcategory,
-  fileUrl: f.fileUrl || undefined,
-  fileType: f.fileType,
-  isPublic: f.isPublic,
-  clientId: f.clientId?._id || f.clientId,
+  id: String(f._id ?? "").replace(/[^a-zA-Z0-9_-]/g, ""),
+  name: String(f.name ?? "").replace(/<[^>]*>/g, "").trim().slice(0, 255),
+  uploadDate: String(f.createdAt ?? "").split("T")[0],
+  category: String(f.category ?? "").replace(/[^a-zA-Z0-9_-]/g, ""),
+  subcategory: f.subcategory ? String(f.subcategory).replace(/[^a-zA-Z0-9_-]/g, "") : undefined,
+  fileUrl: f.fileUrl && (String(f.fileUrl).startsWith("https://") || String(f.fileUrl).startsWith("data:") || String(f.fileUrl).startsWith("blob:")) ? String(f.fileUrl) : undefined,
+  fileType: f.fileType ? String(f.fileType).replace(/[^a-zA-Z0-9/._+-]/g, "") : undefined,
+  isPublic: Boolean(f.isPublic),
+  clientId: f.clientId ? String(f.clientId?._id || f.clientId).replace(/[^a-zA-Z0-9_-]/g, "") : undefined,
 });
 
 export function useFiles(adminMode = false) {

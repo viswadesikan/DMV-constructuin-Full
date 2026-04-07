@@ -17,7 +17,7 @@ const HeroSection = () => {
 
       {/* Watermark logo */}
       <div className="absolute inset-0 flex items-center justify-center opacity-[0.04]">
-        <img src={dmvLogo} alt="" className="w-[400px] sm:w-[600px] md:w-[800px] object-contain animate-float-slow" />
+        <img src={dmvLogo} alt="DMV Construction logo watermark" className="w-[400px] sm:w-[600px] md:w-[800px] object-contain animate-float-slow" />
       </div>
 
       <div className="relative container mx-auto px-4 sm:px-6 text-center">

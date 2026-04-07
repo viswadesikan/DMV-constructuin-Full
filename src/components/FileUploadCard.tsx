@@ -40,11 +40,15 @@ const FileUploadCard = ({ title, files, onUpload, onDelete }: FileUploadCardProp
 
   const handleDownload = (file: FileItem) => {
     if (!file.fileUrl) return;
+    const safeName = file.name.replace(/[^a-zA-Z0-9._\-\s]/g, "_");
+    const safeUrl = file.fileUrl.startsWith("data:") || file.fileUrl.startsWith("blob:") ? file.fileUrl : "";
+    if (!safeUrl) return;
     const link = document.createElement("a");
-    link.href = file.fileUrl;
-    link.download = file.name;
-    link.target = "_blank";
+    link.href = safeUrl;
+    link.download = safeName;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   return (

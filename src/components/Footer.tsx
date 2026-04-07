@@ -21,7 +21,7 @@ const Footer = () => {
 
       <div className="container relative mx-auto px-4 sm:px-6">
         <div className="mb-8 sm:mb-10 flex items-center justify-center gap-3 sm:gap-4">
-          <img src={dmvLogo} alt="DMV" className="h-12 sm:h-14 w-auto rounded-lg bg-primary-foreground/90 p-1 sm:p-1.5 transition-transform duration-500 hover:scale-110 hover:rotate-3" />
+          <img src={dmvLogo} alt="DMV Construction - Trusted Builders in Dharmapuri" className="h-12 sm:h-14 w-auto rounded-lg bg-primary-foreground/90 p-1 sm:p-1.5 transition-transform duration-500 hover:scale-110 hover:rotate-3" />
           <div>
             <h3 className="text-base sm:text-lg font-black tracking-wider">DMV CONSTRUCTION</h3>
             <p className="text-[10px] sm:text-xs tracking-widest text-primary-foreground/60 uppercase">Trusted Builders Since 2016</p>

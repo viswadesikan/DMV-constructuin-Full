@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Phone, MapPin, Mail, Clock, Send } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useRateLimit } from "@/hooks/useRateLimit";
+import { sanitize, validate } from "@/lib/sanitize";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -13,16 +15,34 @@ const ContactSection = () => {
   const leftReveal = useScrollReveal();
   const rightReveal = useScrollReveal();
 
+  const { isAllowed, remainingSeconds } = useRateLimit(3, 60_000);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!API_URL) return;
+
+    if (!isAllowed()) {
+      setError(`Too many attempts. Please wait ${remainingSeconds()}s before trying again.`);
+      return;
+    }
+
+    const cleanName = sanitize.text(form.name, 100);
+    const cleanPhone = sanitize.phone(form.phone);
+    const cleanEmail = sanitize.email(form.email);
+    const cleanMessage = sanitize.message(form.message);
+
+    if (!validate.name(cleanName)) { setError("Please enter a valid name."); return; }
+    if (!validate.phone(cleanPhone)) { setError("Please enter a valid phone number."); return; }
+    if (!validate.email(cleanEmail)) { setError("Please enter a valid email address."); return; }
+    if (!validate.message(cleanMessage)) { setError("Message must be at least 5 characters."); return; }
+
     setSubmitting(true);
     setError("");
     try {
       const res = await fetch(`${API_URL}/api/queries`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ name: cleanName, phone: cleanPhone, email: cleanEmail, message: cleanMessage }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) setError("Failed to send. Please try again.");
@@ -84,21 +104,23 @@ const ContactSection = () => {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-3">
                   {[
-                    { placeholder: "Your Name", key: "name", required: true },
-                    { placeholder: "Phone Number", key: "phone", required: true },
-                    { placeholder: "Email (optional)", key: "email", type: "email" },
+                    { placeholder: "Your Name", key: "name", required: true, maxLength: 100 },
+                    { placeholder: "Phone Number", key: "phone", required: true, maxLength: 20 },
+                    { placeholder: "Email (optional)", key: "email", type: "email", maxLength: 254 },
                   ].map((field) => (
                     <input
                       key={field.key}
                       required={field.required}
                       type={field.type || "text"}
                       placeholder={field.placeholder}
+                      maxLength={field.maxLength}
+                      autoComplete="off"
                       value={form[field.key as keyof typeof form]}
                       onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
                       className="w-full rounded-xl border border-border bg-secondary/30 px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 focus:scale-[1.01]"
                     />
                   ))}
-                  <textarea required placeholder="Your Message" rows={3} value={form.message}
+                  <textarea required placeholder="Your Message" rows={3} value={form.message} maxLength={1000}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                     className="w-full rounded-xl border border-border bg-secondary/30 px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none transition-all duration-300 focus:scale-[1.01]" />
                   {error && <p className="text-xs text-destructive">{error}</p>}
@@ -119,6 +141,7 @@ const ContactSection = () => {
               className="w-full min-h-[350px] sm:min-h-[500px] md:min-h-full border-0"
               loading="lazy"
               allowFullScreen
+              sandbox="allow-scripts allow-same-origin"
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
