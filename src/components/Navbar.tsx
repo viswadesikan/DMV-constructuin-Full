@@ -15,53 +15,60 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl animate-slide-down-nav">
-      <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        <a href="#" className="flex items-center gap-3 group">
-          <img src={dmvLogo} alt="DMV" className="h-10 w-auto rounded-lg bg-primary-foreground p-1 transition-transform duration-300 group-hover:scale-110" />
-          <span className="text-lg font-black tracking-wider text-foreground">DMV</span>
+    <nav className="sticky top-0 z-40 border-b border-border/30 glass-effect animate-slide-down-nav">
+      <div className="container mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
+        <a href="#" className="flex items-center gap-2 sm:gap-3 group">
+          <div className="relative">
+            <div className="absolute -inset-1 rounded-xl bg-primary/20 blur-md opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            <img src={dmvLogo} alt="DMV" className="relative h-9 sm:h-10 w-auto rounded-lg bg-primary-foreground p-0.5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3" />
+          </div>
+          <span className="text-base sm:text-lg font-black tracking-wider text-foreground">DMV</span>
         </a>
 
-        {/* Desktop nav */}
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-0.5 lg:flex">
           {navLinks.map((link) => (
             <a key={link.label} href={link.href}
-              className="relative rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/5 hover:text-foreground after:absolute after:bottom-0 after:left-1/2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:left-0 hover:after:w-full">
+              className="nav-link-fancy rounded-lg px-3 xl:px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 hover:text-foreground">
               {link.label}
             </a>
           ))}
           <Link to="/client"
-            className="ml-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:shadow-lg transition-all duration-300 hover:scale-105">
+            className="ml-3 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground btn-magnetic">
             Client Login
           </Link>
         </div>
 
-        {/* Mobile toggle */}
         <button
           onClick={() => setOpen(!open)}
-          className="rounded-lg p-2 text-foreground md:hidden transition-transform duration-200 active:scale-90"
+          className="rounded-lg p-2 text-foreground lg:hidden transition-transform duration-200 active:scale-90"
           aria-label="Toggle menu"
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <div className="relative h-5 w-5">
+            <Menu className={`absolute inset-0 h-5 w-5 transition-all duration-300 ${open ? 'opacity-0 rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'}`} />
+            <X className={`absolute inset-0 h-5 w-5 transition-all duration-300 ${open ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-50'}`} />
+          </div>
         </button>
       </div>
 
-      {/* Mobile menu */}
-      {open && (
-        <div className="border-t border-border/50 bg-background px-4 py-4 md:hidden animate-menu-slide">
+      <div className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:hidden ${open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="border-t border-border/30 bg-background/95 backdrop-blur-xl px-4 py-3 space-y-1">
           {navLinks.map((link, i) => (
             <a
               key={link.label}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="block rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-primary/5 hover:text-foreground hover:translate-x-2"
-              style={{ animationDelay: `${i * 50}ms` }}
+              className="block rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/5 hover:text-foreground hover:translate-x-2"
+              style={{ transitionDelay: open ? `${i * 60}ms` : '0ms' }}
             >
               {link.label}
             </a>
           ))}
+          <Link to="/client" onClick={() => setOpen(false)}
+            className="block rounded-xl bg-primary px-4 py-3 text-center text-sm font-bold text-primary-foreground mt-2">
+            Client Login
+          </Link>
         </div>
-      )}
+      </div>
     </nav>
   );
 };

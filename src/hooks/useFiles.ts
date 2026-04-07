@@ -36,10 +36,16 @@ export function useFiles(adminMode = false) {
   }, [adminMode]);
 
   const fetchFiles = async () => {
-    const url = adminMode ? `${API_URL}/api/files` : `${API_URL}/api/files/public`;
-    const res = await fetch(url);
-    const data = await res.json();
-    setFiles(data.map(toFileItem));
+    if (!API_URL) return;
+    try {
+      const url = adminMode ? `${API_URL}/api/files` : `${API_URL}/api/files/public`;
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      setFiles(data.map(toFileItem));
+    } catch {
+      // API not available
+    }
   };
 
   const addFile = useCallback(async (
