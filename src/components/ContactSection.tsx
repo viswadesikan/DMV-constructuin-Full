@@ -34,7 +34,7 @@ const ContactSection = () => {
   const contactItems = [
     { icon: Phone, label: "Phone", value: "+91 81221 01282\n+91 94431 01282", href: "tel:+918122101282" },
     { icon: Mail, label: "Email", value: "dmvconstruction.dp@gmail.com", href: "mailto:dmvconstruction.dp@gmail.com" },
-    { icon: MapPin, label: "Address", value: "19/17, 1st floor, Annamalai Gondar St,\nnear Municipality Road, Dharmapuri\nTamil Nadu 636701" },
+    { icon: MapPin, label: "Address", value: "19/17, 1st floor, Annamalai Gondar St,\nnear Municipality Office, Dharmapuri\nTamil Nadu 636701" },
     { icon: Clock, label: "Working Hours", value: "Mon – Sat: 9:00 AM – 6:00 PM" },
   ];
 

@@ -24,14 +24,14 @@ const Footer = () => {
           <img src={dmvLogo} alt="DMV" className="h-12 sm:h-14 w-auto rounded-lg bg-primary-foreground/90 p-1 sm:p-1.5 transition-transform duration-500 hover:scale-110 hover:rotate-3" />
           <div>
             <h3 className="text-base sm:text-lg font-black tracking-wider">DMV CONSTRUCTION</h3>
-            <p className="text-[10px] sm:text-xs tracking-widest text-primary-foreground/60 uppercase">Trusted Builders Since 2010</p>
+            <p className="text-[10px] sm:text-xs tracking-widest text-primary-foreground/60 uppercase">Trusted Builders Since 2016</p>
           </div>
         </div>
 
         <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {[
             { icon: Phone, label: "Contact", value: "+91 81221 01282\n+91 94431 01282" },
-            { icon: MapPin, label: "Address", value: "19/17, 1st floor, Annamalai Gondar St,\nnear Municipality Road, Dharmapuri,\nTamil Nadu – 636701" },
+            { icon: MapPin, label: "Address", value: "19/17, 1st floor, Annamalai Gondar St,\nnear Municipality Office, Dharmapuri,\nTamil Nadu – 636701" },
             { icon: Mail, label: "Email", value: "dmvconstruction.dp@gmail.com" },
           ].map((item) => {
             const Icon = item.icon;

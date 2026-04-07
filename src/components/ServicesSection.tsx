@@ -1,4 +1,4 @@
-import { Layers, Building2, Landmark, Compass, HardHat } from "lucide-react";
+import { Layers, Building2, Landmark, Compass, HardHat, ShieldCheck, Flame, Droplets, Factory, Box, Home, GitBranch, Zap } from "lucide-react";
 import { useScrollReveal, useStaggerReveal } from "@/hooks/useScrollReveal";
 import { useRef, useCallback } from "react";
 
@@ -8,6 +8,13 @@ const services = [
   { icon: Landmark, title: "Local Body Approval", desc: "Village Panchayat, Town Panchayat, and Municipality approval services for all types of construction projects.", gradient: "from-green-400 to-emerald-500" },
   { icon: Compass, title: "Vasthu Planning", desc: "Professional Vasthu-compliant planning services ensuring your property aligns with traditional architectural principles.", gradient: "from-cyan-400 to-teal-500" },
   { icon: HardHat, title: "Construction Services", desc: "Full-scale construction services from foundation to finishing with premium materials and skilled workforce.", gradient: "from-emerald-500 to-green-600" },
+  { icon: ShieldCheck, title: "Agri NOC", desc: "Agricultural No Objection Certificate services for land-use conversion and construction on agricultural land.", gradient: "from-lime-400 to-green-500" },
+  { icon: Flame, title: "Fire NOC & Licence", desc: "Fire safety NOC and licence procurement for commercial, industrial, and residential buildings as per norms.", gradient: "from-orange-400 to-red-500" },
+  { icon: Droplets, title: "PWD – WRD NOC", desc: "Public Works Department and Water Resources Department NOC services for construction near water bodies and roads.", gradient: "from-blue-400 to-cyan-500" },
+  { icon: Factory, title: "Building Running Licence", desc: "Building running licence for industrial buildings — ensuring full legal compliance for operational facilities.", gradient: "from-slate-400 to-gray-500" },
+  { icon: Box, title: "3D Elevation", desc: "Photorealistic 3D exterior and interior elevation designs and walkthroughs to visualise your project before construction.", gradient: "from-purple-400 to-indigo-500" },
+  { icon: GitBranch, title: "Structural Drawing", desc: "Detailed structural drawings prepared by certified engineers for safe and code-compliant construction.", gradient: "from-yellow-400 to-amber-500" },
+  { icon: Zap, title: "Plumbing & Electrical Drawing", desc: "Comprehensive plumbing and electrical layout drawings for residential, commercial, and industrial projects.", gradient: "from-teal-400 to-emerald-500" },
 ];
 
 const TiltCard = ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => {

@@ -29,7 +29,7 @@ const HeroSection = () => {
         <div className="mx-auto mt-4 sm:mt-6 h-1 w-20 sm:w-28 rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-green-600 animate-hero-text animate-hero-text-delay-1" />
 
         <p className="mt-6 sm:mt-8 max-w-xl sm:max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium text-gray-600 animate-hero-text animate-hero-text-delay-2 px-2">
-          Trusted Real Estate Builders & Construction Company in Dharmapuri
+          Trusted Real Estate Builders & Construction Office in Dharmapuri
         </p>
 
         {/* Location Badge */}

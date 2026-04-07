@@ -5,7 +5,7 @@ import { useRef, useCallback } from "react";
 const stats = [
   { icon: Building2, value: "250+", label: "Projects Completed", color: "from-emerald-400 to-green-500" },
   { icon: Users, value: "500+", label: "Happy Clients", color: "from-teal-400 to-cyan-500" },
-  { icon: Award, value: "15+", label: "Years Experience", color: "from-green-400 to-emerald-500" },
+  { icon: Award, value: "10+", label: "Years Experience", color: "from-green-400 to-emerald-500" },
   { icon: CheckCircle, value: "100%", label: "DTCP Approved", color: "from-cyan-400 to-teal-500" },
 ];
 
@@ -54,7 +54,7 @@ const OverviewSection = () => {
             About <span className="gradient-text">DMV Construction</span>
           </h2>
           <p className="mx-auto mb-10 sm:mb-14 max-w-2xl text-center text-sm sm:text-base text-muted-foreground px-2">
-            With over 15 years of experience in real estate and construction, DMV Construction has been the most trusted name in Dharmapuri.
+            With over 10 years of experience in real estate and construction, DMV Construction has been the most trusted name in Dharmapuri since 2016.
           </p>
         </div>
 
