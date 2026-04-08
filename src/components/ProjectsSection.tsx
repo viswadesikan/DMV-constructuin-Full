@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layers, Building2, Compass, FileText, Eye, Download, X } from "lucide-react";
-import { useFiles } from "@/hooks/useFiles";
-import type { FileItem } from "@/hooks/useFiles";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { storage } from "@/lib/storage";
+import type { FileItem } from "@/types";
 
 const tabs = [
   { id: "dtcp", label: "DTCP", icon: Layers },
@@ -13,26 +13,32 @@ const tabs = [
 const ProjectsSection = () => {
   const [activeTab, setActiveTab] = useState("dtcp");
   const [viewFile, setViewFile] = useState<FileItem | null>(null);
-  const { getFilesByCategory } = useFiles();
+  const [files, setFiles] = useState<FileItem[]>([]);
   const titleReveal = useScrollReveal();
   const tabsReveal = useScrollReveal();
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFiles(storage.getFiles().filter(f => f.isPublic));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleDownload = (file: FileItem) => {
-    if (!file.fileUrl) return;
-    const safeName = file.name.replace(/[^a-zA-Z0-9._\-\s]/g, "_");
-    const safeUrl = file.fileUrl.startsWith("data:") || file.fileUrl.startsWith("blob:") ? file.fileUrl : "";
-    if (!safeUrl) return;
     const link = document.createElement("a");
-    link.href = safeUrl;
-    link.download = safeName;
+    link.href = file.fileUrl;
+    link.download = file.name;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const renderFiles = (category: string, subcategory?: string) => {
-    const files = getFilesByCategory(category, subcategory);
-    if (files.length === 0) return (
+    const filtered = files.filter(f => 
+      f.category.toLowerCase() === category.toLowerCase() && 
+      (!subcategory || f.subcategory.toLowerCase() === subcategory.toLowerCase())
+    );
+    if (filtered.length === 0) return (
       <div className="flex flex-col items-center py-10 sm:py-14 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/5 mb-4">
           <FileText className="h-8 w-8 text-primary/30" />
@@ -43,7 +49,7 @@ const ProjectsSection = () => {
     
     return (
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {files.map((file, i) => (
+        {filtered.map((file, i) => (
           <div
             key={file.id}
             className="premium-card glow-on-hover rounded-xl p-4 sm:p-5 animate-fade-in"
@@ -58,16 +64,14 @@ const ProjectsSection = () => {
                 <p className="text-xs text-muted-foreground mt-1">{file.uploadDate}</p>
               </div>
             </div>
-            {file.fileUrl && (
-              <div className="flex gap-2 mt-3">
-                <button onClick={() => setViewFile(file)} className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105">
-                  <Eye className="h-3.5 w-3.5" /> View
-                </button>
-                <button onClick={() => handleDownload(file)} className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105">
-                  <Download className="h-3.5 w-3.5" /> Download
-                </button>
-              </div>
-            )}
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => setViewFile(file)} className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105">
+                <Eye className="h-3.5 w-3.5" /> View
+              </button>
+              <button onClick={() => handleDownload(file)} className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105">
+                <Download className="h-3.5 w-3.5" /> Download
+              </button>
+            </div>
           </div>
         ))}
       </div>

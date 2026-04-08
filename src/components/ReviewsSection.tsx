@@ -1,42 +1,39 @@
 import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
 import { useScrollReveal, useStaggerReveal } from "@/hooks/useScrollReveal";
-
-const API_URL = import.meta.env.VITE_API_URL ?? "";
-
-interface Review {
-  _id: string;
-  name: string;
-  text: string;
-  rating: number;
-}
+import { storage } from "@/lib/storage";
+import type { Review } from "@/types";
 
 const ReviewsSection = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", text: "", rating: 5 });
+  const [form, setForm] = useState({ name: "", comment: "", rating: 5 });
   const [submitted, setSubmitted] = useState(false);
   const titleReveal = useScrollReveal();
   const { ref: gridRef, isVisible: gridVisible, getDelay } = useStaggerReveal(6, 120);
 
   useEffect(() => {
-    if (!API_URL) return;
-    fetch(`${API_URL}/api/reviews`)
-      .then((r) => r.ok ? r.json() : [])
-      .then(setReviews)
-      .catch(() => {});
+    const interval = setInterval(() => {
+      setReviews(storage.getReviews().filter(r => r.approved));
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!API_URL) return;
-    await fetch(`${API_URL}/api/reviews`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    const newReview: Review = {
+      id: Date.now().toString(),
+      name: form.name,
+      comment: form.comment,
+      rating: form.rating,
+      date: new Date().toLocaleDateString(),
+      approved: false,
+    };
+    const updated = [...storage.getReviews(), newReview];
+    storage.setReviews(updated);
     setSubmitted(true);
     setShowForm(false);
+    setForm({ name: "", comment: "", rating: 5 });
   };
 
   const avgRating = reviews.length
@@ -84,8 +81,8 @@ const ReviewsSection = () => {
                   </button>
                 ))}
               </div>
-              <textarea required placeholder="Write your review..." rows={3} value={form.text}
-                onChange={(e) => setForm({ ...form, text: e.target.value })}
+              <textarea required placeholder="Write your review..." rows={3} value={form.comment}
+                onChange={(e) => setForm({ ...form, comment: e.target.value })}
                 className="w-full rounded-xl border border-border bg-secondary/30 px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none transition-all duration-300" />
               <button type="submit" className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground btn-magnetic">
                 Submit Review
@@ -100,7 +97,7 @@ const ReviewsSection = () => {
           <div ref={gridRef} className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {reviews.map((review, i) => (
               <div
-                key={review._id}
+                key={review.id}
                 className={`premium-card glow-on-hover rounded-2xl p-5 sm:p-6 reveal-base reveal-up ${gridVisible ? "reveal-visible" : ""}`}
                 style={getDelay(i)}
               >
@@ -109,7 +106,7 @@ const ReviewsSection = () => {
                     <Star key={j} className={`h-4 w-4 transition-all duration-300 ${j < review.rating ? "fill-yellow-400 text-yellow-400 hover:scale-125" : "text-border"}`} />
                   ))}
                 </div>
-                <p className="mb-4 text-xs sm:text-sm leading-relaxed text-muted-foreground italic">"{review.text}"</p>
+                <p className="mb-4 text-xs sm:text-sm leading-relaxed text-muted-foreground italic">"{review.comment}"</p>
                 <p className="text-sm font-bold text-foreground">{review.name}</p>
               </div>
             ))}

@@ -43,8 +43,12 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          <Link to="/admin"
+            className="ml-3 rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-foreground btn-magnetic">
+            Admin
+          </Link>
           <Link to="/client"
-            className="ml-3 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground btn-magnetic">
+            className="ml-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground btn-magnetic">
             Client Login
           </Link>
         </div>
@@ -74,6 +78,10 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          <Link to="/admin" onClick={() => setOpen(false)}
+            className="block rounded-xl bg-secondary px-4 py-3 text-center text-sm font-semibold text-foreground mt-2">
+            Admin
+          </Link>
           <Link to="/client" onClick={() => setOpen(false)}
             className="block rounded-xl bg-primary px-4 py-3 text-center text-sm font-bold text-primary-foreground mt-2">
             Client Login
