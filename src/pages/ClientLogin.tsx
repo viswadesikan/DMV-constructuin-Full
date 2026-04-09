@@ -21,16 +21,20 @@ const ClientLogin = () => {
     if (!isAllowed()) { setError(`Too many attempts. Wait ${remainingSeconds()}s.`); return; }
     setLoading(true);
     setError("");
-    setTimeout(() => {
-      const clients = storage.getClients();
-      const client = clients.find((c) => c.username === username && c.password === password);
-      if (client) {
-        login({ role: "client", username: client.username, clientId: client.id, name: client.name, projectName: client.projectName }, true);
-        navigate("/client/portal");
-      } else {
-        setError("Invalid credentials.");
+    setTimeout(async () => {
+      try {
+        const res = await storage.loginClient({ username, password });
+        if (res.success && res.client) {
+          login({ role: "client", username: res.client.username, clientId: res.client.id, name: res.client.name, projectName: res.client.projectName }, true);
+          navigate("/client/portal");
+        } else {
+          setError(res.message || "Invalid credentials.");
+        }
+      } catch (err) {
+        setError("Login failed. Please try again.");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }, 500);
   };
 

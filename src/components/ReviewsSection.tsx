@@ -13,9 +13,13 @@ const ReviewsSection = () => {
   const { ref: gridRef, isVisible: gridVisible, getDelay } = useStaggerReveal(6, 120);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setReviews(storage.getReviews().filter(r => r.approved));
-    }, 1000);
+    const fetchReviews = () => {
+      storage.getReviews().then(all => {
+        setReviews(all.filter(r => r.approved));
+      }).catch(console.error);
+    };
+    fetchReviews();
+    const interval = setInterval(fetchReviews, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -29,11 +33,11 @@ const ReviewsSection = () => {
       date: new Date().toLocaleDateString(),
       approved: false,
     };
-    const updated = [...storage.getReviews(), newReview];
-    storage.setReviews(updated);
-    setSubmitted(true);
-    setShowForm(false);
-    setForm({ name: "", comment: "", rating: 5 });
+    storage.addReview(newReview).then(() => {
+      setSubmitted(true);
+      setShowForm(false);
+      setForm({ name: "", comment: "", rating: 5 });
+    }).catch(console.error);
   };
 
   const avgRating = reviews.length

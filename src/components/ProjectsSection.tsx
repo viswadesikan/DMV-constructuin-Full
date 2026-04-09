@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import { Layers, Building2, Compass, FileText, Eye, Download, X } from "lucide-react";
+import { Layers, Building2, Landmark, Compass, HardHat, ShieldCheck, Flame, Droplets, Factory, Box, GitBranch, Zap, FileText, Eye, Download, X } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { storage } from "@/lib/storage";
 import type { FileItem } from "@/types";
 
 const tabs = [
   { id: "dtcp", label: "DTCP", icon: Layers },
-  { id: "localbody", label: "Local Body", icon: Building2 },
-  { id: "vasthu", label: "Vasthu Plan", icon: Compass },
 ];
 
 const ProjectsSection = () => {
@@ -18,9 +16,13 @@ const ProjectsSection = () => {
   const tabsReveal = useScrollReveal();
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setFiles(storage.getFiles().filter(f => f.isPublic));
-    }, 1000);
+    const fetchFiles = () => {
+      storage.getFiles().then(all => {
+        setFiles(all.filter(f => f.isPublic));
+      }).catch(console.error);
+    };
+    fetchFiles();
+    const interval = setInterval(fetchFiles, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -35,8 +37,8 @@ const ProjectsSection = () => {
 
   const renderFiles = (category: string, subcategory?: string) => {
     const filtered = files.filter(f => 
-      f.category.toLowerCase() === category.toLowerCase() && 
-      (!subcategory || f.subcategory.toLowerCase() === subcategory.toLowerCase())
+      f.category?.toLowerCase() === category.toLowerCase() && 
+      (!subcategory || f.subcategory?.toLowerCase() === subcategory.toLowerCase())
     );
     if (filtered.length === 0) return (
       <div className="flex flex-col items-center py-10 sm:py-14 text-center">
@@ -124,16 +126,6 @@ const ProjectsSection = () => {
                 {renderFiles("dtcp", "building")}
               </div>
             </div>
-          )}
-          {activeTab === "localbody" && (
-            <div className="space-y-6 sm:space-y-8">
-              <div><h3 className="mb-4 text-base sm:text-lg font-bold text-foreground">Village Panchayat</h3>{renderFiles("localbody", "village")}</div>
-              <div><h3 className="mb-4 text-base sm:text-lg font-bold text-foreground">Town Panchayat</h3>{renderFiles("localbody", "town")}</div>
-              <div><h3 className="mb-4 text-base sm:text-lg font-bold text-foreground">Municipality</h3>{renderFiles("localbody", "municipality")}</div>
-            </div>
-          )}
-          {activeTab === "vasthu" && (
-            <div><h3 className="mb-4 text-base sm:text-lg font-bold text-foreground text-center">Vasthu Plans</h3>{renderFiles("vasthu")}</div>
           )}
         </div>
       </div>

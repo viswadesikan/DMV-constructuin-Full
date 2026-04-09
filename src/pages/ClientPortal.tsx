@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FileText, Eye, Download, LogOut, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -10,7 +10,13 @@ const ClientPortal = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [viewFile, setViewFile] = useState<FileItem | null>(null);
-  const files = storage.getFiles().filter((f) => f.assignedTo === user?.clientId);
+  const [files, setFiles] = useState<FileItem[]>([]);
+
+  useEffect(() => {
+    storage.getFiles().then(allFiles => {
+      setFiles(allFiles.filter((f) => f.assignedTo === user?.clientId));
+    }).catch(console.error);
+  }, [user]);
 
   const handleLogout = () => {
     logout();

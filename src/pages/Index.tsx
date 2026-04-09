@@ -14,13 +14,14 @@ import type { HomepageSection } from "@/types";
 
 const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
-  const [sections, setSections] = useState<HomepageSection>(storage.getHomepage());
+  const [sections, setSections] = useState<HomepageSection>({hero:true,overview:true,services:true,projects:true,reviews:true,contact:true});
   const handleSplashFinish = useCallback(() => setShowSplash(false), []);
 
   useEffect(() => {
+    storage.getHomepage().then(setSections).catch(console.error);
     const interval = setInterval(() => {
-      setSections(storage.getHomepage());
-    }, 1000);
+      storage.getHomepage().then(setSections).catch(console.error);
+    }, 5000); // Polling every 5 seconds since it hits the API now
     return () => clearInterval(interval);
   }, []);
 

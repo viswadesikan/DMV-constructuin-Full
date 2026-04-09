@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Upload, Trash2, Eye, Download, FileText, Users, Star, Home, LogOut, Undo2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -10,13 +10,20 @@ const AdminDashboard = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"upload" | "showcase" | "clients" | "reviews" | "homepage">("upload");
-  const [files, setFiles] = useState<FileItem[]>(storage.getFiles());
-  const [clients, setClients] = useState<Client[]>(storage.getClients());
-  const [reviews, setReviews] = useState<Review[]>(storage.getReviews());
-  const [homepage, setHomepage] = useState<HomepageSection>(storage.getHomepage());
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [homepage, setHomepage] = useState<HomepageSection>({hero:true,overview:true,services:true,projects:true,reviews:true,contact:true});
+
+  useEffect(() => {
+    storage.getFiles().then(setFiles).catch(console.error);
+    storage.getClients().then(setClients).catch(console.error);
+    storage.getReviews().then(setReviews).catch(console.error);
+    storage.getHomepage().then(setHomepage).catch(console.error);
+  }, []);
   const [deleteQueue, setDeleteQueue] = useState<{ id: string; type: "file" | "client"; timer: NodeJS.Timeout } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = useState({ name: "", category: "DTCP", subcategory: "", assignedTo: "", isPublic: false });
+  const [formData, setFormData] = useState({ name: "", category: "DTCP", subcategory: "Layout", assignedTo: "", isPublic: false });
   const [clientForm, setClientForm] = useState({ name: "", username: "", password: "", phone: "", projectName: "" });
   const [viewFile, setViewFile] = useState<FileItem | null>(null);
 
@@ -36,11 +43,11 @@ const AdminDashboard = () => {
         isPublic: formData.isPublic,
         assignedTo: formData.assignedTo || undefined,
       };
-      const updated = [...files, newFile];
-      setFiles(updated);
-      storage.setFiles(updated);
-      setFormData({ name: "", category: "DTCP", subcategory: "", assignedTo: "", isPublic: false });
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      storage.addFile(newFile).then(savedFile => {
+        setFiles([...files, savedFile]);
+        setFormData({ name: "", category: "DTCP", subcategory: "Layout", assignedTo: "", isPublic: false });
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      });
     };
     reader.readAsDataURL(file);
   };
@@ -48,10 +55,10 @@ const AdminDashboard = () => {
   const deleteFile = (id: string) => {
     if (deleteQueue) clearTimeout(deleteQueue.timer);
     const timer = setTimeout(() => {
-      const updated = files.filter((f) => f.id !== id);
-      setFiles(updated);
-      storage.setFiles(updated);
-      setDeleteQueue(null);
+      storage.deleteFile(id).then(() => {
+        setFiles(files.filter((f) => f.id !== id));
+        setDeleteQueue(null);
+      });
     }, 10000);
     setDeleteQueue({ id, type: "file", timer });
   };
@@ -64,49 +71,52 @@ const AdminDashboard = () => {
   };
 
   const togglePublic = (id: string) => {
-    const updated = files.map((f) => (f.id === id ? { ...f, isPublic: !f.isPublic } : f));
-    setFiles(updated);
-    storage.setFiles(updated);
+    const file = files.find(f => f.id === id);
+    if (!file) return;
+    storage.updateFile(id, { isPublic: !file.isPublic }).then(() => {
+      setFiles(files.map((f) => (f.id === id ? { ...f, isPublic: !f.isPublic } : f)));
+    });
   };
 
   const assignToClient = (fileId: string, clientId: string) => {
-    const updated = files.map((f) => (f.id === fileId ? { ...f, assignedTo: clientId } : f));
-    setFiles(updated);
-    storage.setFiles(updated);
+    storage.updateFile(fileId, { assignedTo: clientId }).then(() => {
+      setFiles(files.map((f) => (f.id === fileId ? { ...f, assignedTo: clientId } : f)));
+    });
   };
 
   const addClient = () => {
     if (!clientForm.name || !clientForm.username || !clientForm.password) return;
     const newClient: Client = { ...clientForm, id: Date.now().toString() };
-    const updated = [...clients, newClient];
-    setClients(updated);
-    storage.setClients(updated);
-    setClientForm({ name: "", username: "", password: "", phone: "", projectName: "" });
+    storage.addClient(newClient).then(savedClient => {
+      setClients([...clients, savedClient]);
+      setClientForm({ name: "", username: "", password: "", phone: "", projectName: "" });
+    });
   };
 
   const deleteClient = (id: string) => {
     if (!confirm("Delete this client?")) return;
-    const updated = clients.filter((c) => c.id !== id);
-    setClients(updated);
-    storage.setClients(updated);
+    storage.deleteClient(id).then(() => {
+      setClients(clients.filter((c) => c.id !== id));
+    });
   };
 
   const approveReview = (id: string) => {
-    const updated = reviews.map((r) => (r.id === id ? { ...r, approved: true } : r));
-    setReviews(updated);
-    storage.setReviews(updated);
+    storage.updateReview(id, { approved: true }).then(() => {
+      setReviews(reviews.map((r) => (r.id === id ? { ...r, approved: true } : r)));
+    });
   };
 
   const deleteReview = (id: string) => {
-    const updated = reviews.filter((r) => r.id !== id);
-    setReviews(updated);
-    storage.setReviews(updated);
+    storage.deleteReview(id).then(() => {
+      setReviews(reviews.filter((r) => r.id !== id));
+    });
   };
 
   const toggleSection = (section: keyof HomepageSection) => {
     const updated = { ...homepage, [section]: !homepage[section] };
-    setHomepage(updated);
-    storage.setHomepage(updated);
+    storage.setHomepage(updated).then(() => {
+      setHomepage(updated);
+    });
   };
 
   const handleLogout = () => {
@@ -165,19 +175,41 @@ const AdminDashboard = () => {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full rounded-lg border px-3 py-2 text-sm"
               />
-              <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full rounded-lg border px-3 py-2 text-sm">
+              <select value={formData.category} onChange={(e) => {
+                  const newCat = e.target.value;
+                  const newSub = newCat === "DTCP" ? "Layout" : newCat === "Local Body" ? "Village" : "";
+                  setFormData({ ...formData, category: newCat, subcategory: newSub });
+                }} className="w-full rounded-lg border px-3 py-2 text-sm">
                 <option value="DTCP">DTCP</option>
                 <option value="Local Body">Local Body</option>
-                <option value="Vasthu">Vasthu</option>
+                <option value="Vasthu Planning">Vasthu Planning</option>
+                <option value="Construction Services">Construction Services</option>
+                <option value="Agri NOC">Agri NOC</option>
+                <option value="Fire NOC & Licence">Fire NOC & Licence</option>
+                <option value="PWD - WRD NOC">PWD - WRD NOC</option>
+                <option value="Building Running Licence">Building Running Licence</option>
+                <option value="3D Elevation">3D Elevation</option>
+                <option value="Structural Drawing">Structural Drawing</option>
+                <option value="Plumbing & Electrical">Plumbing & Electrical</option>
                 <option value="GO">GO</option>
               </select>
-              <input
-                type="text"
-                placeholder="Subcategory"
-                value={formData.subcategory}
-                onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
+              {(formData.category === "DTCP" || formData.category === "Local Body") && (
+                <select value={formData.subcategory} onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })} className="w-full rounded-lg border px-3 py-2 text-sm">
+                  {formData.category === "DTCP" && (
+                    <>
+                      <option value="Layout">Layout</option>
+                      <option value="Building">Building</option>
+                    </>
+                  )}
+                  {formData.category === "Local Body" && (
+                    <>
+                      <option value="Village">Village</option>
+                      <option value="Town">Town</option>
+                      <option value="Municipality">Municipality</option>
+                    </>
+                  )}
+                </select>
+              )}
               <select value={formData.assignedTo} onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })} className="w-full rounded-lg border px-3 py-2 text-sm">
                 <option value="">Assign to Client (Optional)</option>
                 {clients.map((c) => (
