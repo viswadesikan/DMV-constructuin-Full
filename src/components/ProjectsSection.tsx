@@ -8,10 +8,13 @@ const tabs = [
   { id: "dtcp", label: "DTCP", icon: Layers },
 ];
 
+const INITIAL_FILES = 6;
+
 const ProjectsSection = () => {
   const [activeTab, setActiveTab] = useState("dtcp");
   const [viewFile, setViewFile] = useState<FileItem | null>(null);
   const [files, setFiles] = useState<FileItem[]>([]);
+  const [showAllMap, setShowAllMap] = useState<Record<string, boolean>>({});
   const titleReveal = useScrollReveal();
   const tabsReveal = useScrollReveal();
 
@@ -36,8 +39,10 @@ const ProjectsSection = () => {
   };
 
   const renderFiles = (category: string, subcategory?: string) => {
-    const filtered = files.filter(f => 
-      f.category?.toLowerCase() === category.toLowerCase() && 
+    const key = `${category}-${subcategory ?? "all"}`;
+    const showAll = !!showAllMap[key];
+    const filtered = files.filter(f =>
+      f.category?.toLowerCase() === category.toLowerCase() &&
       (!subcategory || f.subcategory?.toLowerCase() === subcategory.toLowerCase())
     );
     if (filtered.length === 0) return (
@@ -48,34 +53,48 @@ const ProjectsSection = () => {
         <p className="text-sm text-muted-foreground">No projects uploaded yet</p>
       </div>
     );
-    
+
+    const visible = showAll ? filtered : filtered.slice(0, INITIAL_FILES);
+
     return (
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((file, i) => (
-          <div
-            key={file.id}
-            className="premium-card glow-on-hover rounded-xl p-4 sm:p-5 animate-fade-in"
-            style={{ animationDelay: `${i * 80}ms` }}
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-accent/10">
-                <FileText className="h-5 w-5 text-primary" />
+      <div>
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((file, i) => (
+            <div
+              key={file.id}
+              className="premium-card glow-on-hover rounded-xl p-4 sm:p-5 animate-fade-in"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-accent/10">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-sm font-semibold text-foreground truncate">{file.name}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">{file.uploadDate}</p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="text-sm font-semibold text-foreground truncate">{file.name}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{file.uploadDate}</p>
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => setViewFile(file)} className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105">
+                  <Eye className="h-3.5 w-3.5" /> View
+                </button>
+                <button onClick={() => handleDownload(file)} className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105">
+                  <Download className="h-3.5 w-3.5" /> Download
+                </button>
               </div>
             </div>
-            <div className="flex gap-2 mt-3">
-              <button onClick={() => setViewFile(file)} className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105">
-                <Eye className="h-3.5 w-3.5" /> View
-              </button>
-              <button onClick={() => handleDownload(file)} className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-all duration-300 hover:scale-105">
-                <Download className="h-3.5 w-3.5" /> Download
-              </button>
-            </div>
+          ))}
+        </div>
+        {filtered.length > INITIAL_FILES && (
+          <div className="mt-5 flex justify-center">
+            <button
+              onClick={() => setShowAllMap(m => ({ ...m, [key]: !m[key] }))}
+              className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-6 py-2.5 text-xs font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-105"
+            >
+              {showAll ? "Show Less ↑" : `View All ${filtered.length} Projects ↓`}
+            </button>
           </div>
-        ))}
+        )}
       </div>
     );
   };
@@ -131,11 +150,15 @@ const ProjectsSection = () => {
       </div>
 
       {viewFile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 animate-fade-in" onClick={() => setViewFile(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 animate-fade-in" onClick={() => setViewFile(null)}>
           <div className="relative max-h-[90vh] max-w-4xl w-full bg-background rounded-2xl overflow-hidden shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="font-bold text-foreground truncate pr-4">{viewFile.name}</h3>
-              <button onClick={() => setViewFile(null)} className="rounded-lg p-2 hover:bg-secondary transition-colors shrink-0">
+              <button
+                onClick={() => setViewFile(null)}
+                aria-label="Close"
+                className="flex h-10 w-10 items-center justify-center rounded-xl hover:bg-secondary transition-colors shrink-0"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
