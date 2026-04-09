@@ -32,7 +32,7 @@ const HeroSection = () => {
 
         {/* Location Badge */}
         <div className="mt-8 sm:mt-10 flex justify-center animate-hero-text animate-hero-text-delay-3">
-          <div className="flex items-center gap-2 sm:gap-3 rounded-full glass-card px-5 sm:px-6 py-2.5 sm:py-3 shadow-lg animate-float">
+          <div className="flex items-center gap-2 sm:gap-3 rounded-full glass-card px-5 sm:px-6 py-2.5 sm:py-3 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:bg-white/60 cursor-default cursor-pointer hover:scale-105">
             <MapPin className="h-4 w-4 text-emerald-600" />
             <span className="text-xs sm:text-sm font-semibold text-gray-700">
               Dharmapuri, Tamil Nadu

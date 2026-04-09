@@ -1,9 +1,35 @@
 import { Building2, Award, Users, CheckCircle } from "lucide-react";
 import { useScrollReveal, useStaggerReveal } from "@/hooks/useScrollReveal";
-import { useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+
+const AnimatedCounter = ({ value, isVisible }: { value: string, isVisible: boolean }) => {
+  const [count, setCount] = useState(0);
+  const numericValue = parseInt(value);
+  const suffix = value.replace(/[0-9]/g, '');
+
+  useEffect(() => {
+    if (!isVisible || isNaN(numericValue)) return;
+    let start = 0;
+    const duration = 2000;
+    const increment = numericValue / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= numericValue) {
+        setCount(numericValue);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [isVisible, numericValue]);
+
+  if (isNaN(numericValue)) return <span>{value}</span>;
+  return <span>{count}{suffix}</span>;
+};
 
 const stats = [
-  { icon: Building2, value: "250+", label: "Projects Completed", color: "from-emerald-400 to-green-500" },
+  { icon: Building2, value: "500+", label: "Projects Completed", color: "from-emerald-400 to-green-500" },
   { icon: Users, value: "500+", label: "Happy Clients", color: "from-teal-400 to-cyan-500" },
   { icon: Award, value: "10+", label: "Years Experience", color: "from-green-400 to-emerald-500" },
   { icon: CheckCircle, value: "100%", label: "DTCP Approved", color: "from-cyan-400 to-teal-500" },
@@ -70,7 +96,9 @@ const OverviewSection = () => {
                 <div className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${stat.color} shadow-lg`}>
                   <Icon className="h-6 w-6 sm:h-7 sm:w-7 text-white icon-3d-hover" />
                 </div>
-                <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground">{stat.value}</span>
+                <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground">
+                  <AnimatedCounter value={stat.value} isVisible={gridVisible} />
+                </span>
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground">{stat.label}</span>
               </TiltCard>
             );

@@ -33,7 +33,7 @@ const Navbar = () => {
             <div className="absolute -inset-1 rounded-xl bg-primary/20 blur-md opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             <img src={dmvLogo} alt="DMV Construction" className="relative h-9 sm:h-10 w-auto rounded-lg bg-primary-foreground p-0.5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3" />
           </div>
-          <span className="text-base sm:text-lg font-black tracking-tight gradient-text animate-hero-text" style={{ fontFamily: "'Barlow Condensed', sans-serif", transform: "scaleX(1.5)", display: "inline-block", transformOrigin: "left center" }}>DMV</span>
+          <span className="text-base sm:text-lg font-black tracking-tight gradient-text animate-hero-text transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.8)] group-hover:brightness-125" style={{ fontFamily: "'Barlow Condensed', sans-serif", transform: "scaleX(1.5)", display: "inline-block", transformOrigin: "left center" }}>DMV</span>
         </a>
 
         <div className="hidden items-center gap-0.5 lg:flex">
