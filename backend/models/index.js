@@ -47,8 +47,11 @@ const QuerySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Use FileRecord (not "File") so routes never call `new File(...)` — Node 18+ exposes a global Web API `File`.
+const FileRecord = mongoose.model('File', FileSchema);
+
 module.exports = {
-  File: mongoose.model('File', FileSchema),
+  FileRecord,
   Client: mongoose.model('Client', ClientSchema),
   Review: mongoose.model('Review', ReviewSchema),
   Homepage: mongoose.model('Homepage', HomepageSchema),

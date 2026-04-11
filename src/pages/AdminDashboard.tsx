@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Upload, Trash2, Eye, Download, FileText, Users, Star, Home, LogOut, Undo2 } from "lucide-react";
+import { Upload, Trash2, Eye, FileText, Users, Star, Home, LogOut, Undo2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { storage } from "@/lib/storage";
+import { Button } from "@/components/ui/button";
 import type { FileItem, Client, Review, HomepageSection } from "@/types";
 import dmvLogo from "@/assets/dmv-logo-new.jpeg";
 
@@ -26,10 +27,18 @@ const AdminDashboard = () => {
   const [formData, setFormData] = useState({ name: "", category: "DTCP", subcategory: "Layout", assignedTo: "", isPublic: false });
   const [clientForm, setClientForm] = useState({ name: "", username: "", password: "", phone: "", projectName: "" });
   const [viewFile, setViewFile] = useState<FileItem | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    setPendingFile(file ?? null);
+  };
+
+  const submitUpload = () => {
+    if (!pendingFile || isUploading) return;
+    setIsUploading(true);
+    const file = pendingFile;
     const reader = new FileReader();
     reader.onload = () => {
       const newFile: FileItem = {
@@ -43,11 +52,20 @@ const AdminDashboard = () => {
         isPublic: formData.isPublic,
         assignedTo: formData.assignedTo || undefined,
       };
-      storage.addFile(newFile).then(savedFile => {
-        setFiles([...files, savedFile]);
-        setFormData({ name: "", category: "DTCP", subcategory: "Layout", assignedTo: "", isPublic: false });
-        if (fileInputRef.current) fileInputRef.current.value = "";
-      });
+      storage
+        .addFile(newFile)
+        .then((savedFile) => {
+          setFiles((prev) => [...prev, savedFile]);
+          setFormData({ name: "", category: "DTCP", subcategory: "Layout", assignedTo: "", isPublic: false });
+          setPendingFile(null);
+          if (fileInputRef.current) fileInputRef.current.value = "";
+        })
+        .catch(console.error)
+        .finally(() => setIsUploading(false));
+    };
+    reader.onerror = () => {
+      console.error("File read failed");
+      setIsUploading(false);
     };
     reader.readAsDataURL(file);
   };
@@ -220,7 +238,34 @@ const AdminDashboard = () => {
                 <input type="checkbox" checked={formData.isPublic} onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })} className="rounded" />
                 Show on public website
               </label>
-              <input ref={fileInputRef} type="file" onChange={handleFileUpload} accept="image/*,.pdf,.dwg,.doc,.docx,.xls,.xlsx" className="w-full text-sm" />
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileSelected}
+                accept="image/*,.pdf,.dwg,.doc,.docx,.xls,.xlsx"
+                className="sr-only"
+                id="admin-project-file-input"
+              />
+              <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4" />
+                Choose file
+              </Button>
+              {pendingFile && (
+                <p className="text-xs text-muted-foreground rounded-lg border border-dashed px-3 py-2 bg-secondary/30">
+                  Selected: <span className="font-medium text-foreground">{pendingFile.name}</span>
+                </p>
+              )}
+              <Button
+                type="button"
+                className="w-full"
+                disabled={!pendingFile || isUploading}
+                onClick={submitUpload}
+              >
+                {isUploading ? "Uploading…" : "Upload & submit"}
+              </Button>
+              <p className="text-[11px] text-muted-foreground text-center">
+                Choose a file, then click Upload & submit. Images, PDF, DWG, and Office documents are supported.
+              </p>
             </div>
 
             <div className="mt-6">

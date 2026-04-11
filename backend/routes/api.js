@@ -1,30 +1,65 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
-const { File, Client, Review, Homepage, Query } = require('../models');
+const { FileRecord, Client, Review, Homepage, Query } = require('../models');
+
+// ==== HEALTH (Mongo connectivity) ====
+router.get('/health', (req, res) => {
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({
+    ok: ready,
+    mongo: ready ? 'connected' : 'disconnected',
+    readyState: mongoose.connection.readyState,
+  });
+});
 
 // ==== FILES ====
 router.get('/files', async (req, res) => {
   try {
-    const files = await File.find({});
+    const files = await FileRecord.find({});
     res.json(files);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-router.post('/files', async (req, res) => {
+router.post('/files', async (req, res, next) => {
   try {
-    const newFile = new File(req.body);
-    await newFile.save();
-    res.status(201).json(newFile);
+    const b = req.body;
+    if (!b || typeof b !== 'object') {
+      return res.status(400).json({ error: 'Missing JSON body' });
+    }
+    if (typeof b.fileUrl !== 'string' || b.fileUrl.length === 0) {
+      return res.status(400).json({ error: 'fileUrl is required' });
+    }
+    // BSON document limit is 16MB; base64 inflates size — reject early with a clear message.
+    const maxChars = 14 * 1024 * 1024;
+    if (b.fileUrl.length > maxChars) {
+      return res.status(413).json({
+        error: `File is too large to store (${Math.round(b.fileUrl.length / 1024 / 1024)}MB raw). MongoDB limit is 16MB per document; use a smaller or more compressed file.`,
+      });
+    }
+    const doc = new FileRecord({
+      id: String(b.id),
+      name: (typeof b.name === 'string' && b.name.trim()) || 'Untitled',
+      category: typeof b.category === 'string' ? b.category : String(b.category ?? ''),
+      subcategory: b.subcategory != null ? String(b.subcategory) : '',
+      fileUrl: b.fileUrl,
+      fileType: b.fileType != null ? String(b.fileType) : undefined,
+      uploadDate: b.uploadDate != null ? String(b.uploadDate) : undefined,
+      isPublic: Boolean(b.isPublic),
+      assignedTo: b.assignedTo != null && b.assignedTo !== '' ? String(b.assignedTo) : undefined,
+    });
+    const saved = await doc.save();
+    res.status(201).json(saved.toObject({ versionKey: false }));
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 
 router.put('/files/:id', async (req, res) => {
   try {
-    const updated = await File.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
+    const updated = await FileRecord.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
     res.json(updated);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -33,7 +68,7 @@ router.put('/files/:id', async (req, res) => {
 
 router.delete('/files/:id', async (req, res) => {
   try {
-    await File.findOneAndDelete({ id: req.params.id });
+    await FileRecord.findOneAndDelete({ id: req.params.id });
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
